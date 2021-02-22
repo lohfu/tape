@@ -9,12 +9,20 @@ var pkgPath = resolvePath(cwd, 'package.json');
 
 var isModulePackage = fs.existsSync(pkgPath) && require(pkgPath).type === 'module';
 
-module.exports = function (file) {
+var loadingPromise;
+
+function load(file) {
     var ext = extnamePath(file);
 
     if (ext === '.mjs' || isModulePackage && ext === '.js') {
-        import(resolvePath(cwd, file));
-    } else {
-        require(resolvePath(cwd, file));
+        return import(resolvePath(cwd, file));
     }
+
+    require(resolvePath(cwd, file));
+}
+
+module.exports = function (file) {
+    loadingPromise = loadingPromise ? loadingPromise.then(function () {
+        return load(file);
+    }) : load(file);
 };
