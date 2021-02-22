@@ -30,6 +30,12 @@
     },
     "overrides": [
         {
+            "files": ["bin/load-module-esm-support.js"],
+            "parserOptions": {
+                "ecmaVersion": 2020,
+            },
+        },
+        {
             "files": ["test/async-await/*"],
             "parserOptions": {
                 "ecmaVersion": 2017,

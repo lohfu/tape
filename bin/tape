@@ -41,6 +41,18 @@ if (typeof opts.ignore === 'string') {
     var matcher = ignore.createMatcher(ignoreStr);
 }
 
+function supportsEsm() {
+    var version = process.version.match(/^v(\d+)\.(\d+)\.\d+$/);
+    var major = parseInt(version[1], 10);
+    var minor = parseInt(version[2], 10);
+
+    return major >= 14 || major === 13 && minor >= 2 || major === 12 && minor >= 17;
+}
+
+var loadTestFile = supportsEsm() ? require('./load-module-esm-support') : function (file) {
+    require(resolvePath(cwd, file));
+};
+
 opts._.forEach(function (arg) {
     // If glob does not match, `files` will be an empty array.
     // Note: `glob.sync` may throw an error and crash the node process.
@@ -50,9 +62,7 @@ opts._.forEach(function (arg) {
         throw new TypeError('unknown error: glob.sync did not return an array or throw. Please report this.');
     }
 
-    files.filter(function (file) { return !matcher || !matcher.shouldIgnore(file); }).forEach(function (file) {
-        require(resolvePath(cwd, file));
-    });
+    files.filter(function (file) { return !matcher || !matcher.shouldIgnore(file); }).forEach(loadTestFile);
 });
 
 // vim: ft=javascript
